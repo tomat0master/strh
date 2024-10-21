@@ -1,0 +1,82 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry, CJKutf8}
+\geometry{margin=1.5cm, vmargin={0pt,1cm}}
+\setlength{\topmargin}{-1cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\textheight}{25.3cm}
+
+% useful packages.
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\usepackage{float, caption}
+
+\lstset{
+    basicstyle=\ttfamily, basewidth=0.5em
+}
+
+% some common command
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+
+\begin{document}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{何思壮, 3230103269}
+\chead{数据结构与算法第四次作业}
+\rhead{Oct.16th, 2024}
+
+\section{测试程序的设计思路}
+
+为方便测试，我增加了新的函数printList(),作用是打印出链表中除哨兵节点外的其他节点的data。其中，printList()包含了包含retrieve(),begin()和end()的测试。
+
+我首先用初始化列表构造函数创建list1，再用拷贝构造函数将list1拷贝到list2,而后测试了size(),empty(),和clear()，同时测试了拷贝构造函数为深度赋值。
+
+我用赋值运算符创建了list3，用list3测试了pop\_back(),pop\_front(),push\_back(),push\_front()功能。此外，用右值引用创建了list4,然后测试了移动调用函数，功能正常。
+
+接上来是对运算符的测试，我首先对静态迭代器进行了一系列运算符的测试，然后用动态迭代器对列表进行写入操作，功能正常。
+
+最后我进行了对insert(),erase()的测试，其中包括insert()的右值引用，一切正常。
+
+
+
+\section{测试的结果}
+
+测试结果一切正常。
+
+我用 valgrind 进行测试，发现代码上没有发生内存泄露，但显示bash解释器会导致内存泄漏，我无法解决。
+
+\section{（可选）bug报告}
+
+我发现了一个 bug，触发条件如下：
+
+\begin{enumerate}
+    \item 首先令p为list.end(),再进行++p操作
+    \item 然后尝试打印*p
+    \item 报错
+\end{enumerate}
+
+据我分析，它出现的原因是：在各项功能中，end()作为哨兵节点，我们不会遍历或者调用到它，上述操作显然超出了list的范围导致了未定义行为。解决的方法是可以在重载运算符时增加条件，保证中间节点的操作不变，而哨兵节点无法被访问。复现较简单，已写。
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
