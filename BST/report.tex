@@ -1,0 +1,91 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry, CJKutf8}
+\geometry{margin=1.5cm, vmargin={0pt,1cm}}
+\setlength{\topmargin}{-1cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\textheight}{25.3cm}
+
+% useful packages.
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\usepackage{float, caption}
+
+\lstset{
+    basicstyle=\ttfamily, basewidth=0.5em
+}
+
+% some common command
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+
+\begin{document}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{何思壮, 3230103269}
+\chead{数据结构与算法第五次作业}
+\rhead{Nov.1th, 2024}
+
+\section{remove()函数功能的实现}
+\hspace{0em}remove()函数第一步先找到所要删除的节点，所要删除的节点有一个子树或没有子树时的情况都是简单的，针对所要删除的节点有两个子树的情况，我们需要另外考虑。首先，我写了detachMin()函数，作用是删除输入节点的子树的最小节点，并返回该节点。
+
+\hspace{0em}如此一来，假设我们知道了所要删除的节点为t，而且它有左右两个子树，只需
+
+BinaryNode *oldNode = t;
+
+t = detachMin(t->right);
+
+t->left = oldNode->left;
+
+t->right = oldNode->right;
+
+delete oldNode;
+
+即可。该方法避免了内容复制，采用了节点替换和修改指针。
+
+\section{remove()函数功能的测试}
+\hspace{0em}要测试remove()，我们需要知道调用函数前后的二叉树的结构。一个简单的方法是根据二叉树的中序遍历与前序遍历确定唯一的二叉树结构，因此我新添加了函数printTree1()，用于打印二叉树的前序遍历。
+
+\hspace{0em}首先创建一个二叉树，插入元素。我们得到一个二叉树，中序遍历为：3\ 5\ 7\ 10\ 12\ 15\ 18,前序遍历为：10\ 5\ 3\ 7\ 15\ 12\ 18。 我将分别删除10，5，3，12四个节点进行测试。
+
+\hspace{0em}remove(10):中序遍历：3\ 5\ 7\ 12\ 15\ 18,前序遍历：12\ 5\ 3\ 7\ 15\ 18
+
+\hspace{0em}remove(5):中序遍历：3\ 7\ 10\ 12\ 15\ 18，前序遍历：10\ 7\ 3\ 15\ 12\ 18
+
+\hspace{0em}remove(3):中序遍历：5\ 7\ 10\ 12\ 15\ 18，前序遍历：10\ 5\ 7\ 15\ 12\ 18
+
+\hspace{0em}remove(12):中序遍历：3\ 5\ 7\ 10\ 15\ 18，前序遍历：10\ 5\ 3\ 7\ 15\ 18
+
+\hspace{0em}以上测试针对被删除节点有两个子节点和没有子节点，我们接下来简单测试针对一个子节点和所删除元素不存在的情况。在删除3的基础上，我们再删除5，这是这对一个子节点的测试。删除11，针对元素不存在情况。
+
+\hspace{0em}remove(3);remove(5):中序遍历：7\ 10\ 12\ 15\ 18，前序遍历：10\ 7\ 15\ 12\ 18
+
+\hspace{0em}remove(11):中序遍历：3\ 5\ 7\ 10\ 12\ 15\ 18,前序遍历：10\ 5\ 3\ 7\ 15\ 12\ 18
+
+结果均符合预期。
+
+
+
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
