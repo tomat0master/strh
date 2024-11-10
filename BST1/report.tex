@@ -1,0 +1,89 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry, CJKutf8}
+\geometry{margin=1.5cm, vmargin={0pt,1cm}}
+\setlength{\topmargin}{-1cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\textheight}{25.3cm}
+
+% useful packages.
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\usepackage{float, caption}
+
+\lstset{
+    basicstyle=\ttfamily, basewidth=0.5em
+}
+
+% some common command
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+
+\begin{document}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{何思壮, 3230103269}
+\chead{数据结构与算法第五次作业}
+\rhead{Nov.10th, 2024}
+
+\section{remove()函数功能的实现}
+\hspace{0em}remove()函数第一步先找到所要删除的节点，所要删除的节点有一个子树或没有子树时的情况都是简单的，针对所要删除的节点有两个子树的情况，我们需要另外考虑。首先，我写了detachMin()函数，作用是删除输入节点的子树的最小节点，并返回该节点。
+
+如此一来，假设我们知道了所要删除的节点为t，而且它有左右两个子树，只需
+
+BinaryNode *oldNode = t;
+
+t = detachMin(t->right);
+
+t->left = oldNode->left;
+
+t->right = oldNode->right;
+
+delete oldNode;
+
+即可。该方法避免了内容复制，采用了节点替换和修改指针。
+
+在这个基础上，引入height变量，去实现二叉树的平衡。我们经常需要对节点进行更新的操作，所以增加了函数updataHeight(),将空节点的高度置0，非空节点的高度置为子节点高度大者加1。利用这个函数，我对insert(),detachMin()等函数进行了高度的更新，确保二叉树上每个节点拥有正确的高度。这样我们初步嵌入了height，我们希望得到平衡树，增添了balance()函数，作用是平衡节点t的子树。在remove()函数的最后加上balance(t),我们就能够保证最后我们能够得到平衡树，因为在寻找过程中我们实际上也平衡了每一个遍历过节点的子树。
+
+\section{balance()函数功能的实现}
+\hspace{0em}节点t不平衡的情况有4种：
+
+
+1.左大于右，左左大于等于左右
+
+2.左大于右，左左小于左右
+
+3.右大于左，右右大于等于右左
+
+4.右大于左，右右小于右左
+
+1，3用一次旋转(rotation),2，4用两次旋转(doublerotation)。目的都是将高度高的节点移到更靠近根节点的位置以实现平衡。我们增添函数rotateWithLeftChild(),rotateWithRightChild(),doubleWithLeftChild(),doubleWithRightChild()即可。
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
