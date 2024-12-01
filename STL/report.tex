@@ -1,0 +1,84 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry, CJKutf8}
+\geometry{margin=1.5cm, vmargin={0pt,1cm}}
+\setlength{\topmargin}{-1cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\textheight}{25.3cm}
+
+% useful packages.
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\usepackage{float, caption}
+
+\lstset{
+	basicstyle=\ttfamily, basewidth=0.5em
+}
+
+% some common command
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+
+\begin{document}
+	\pagestyle{fancy}
+	\fancyhead{}
+	\lhead{何思壮, 3230103269}
+	\chead{数据结构与算法第七次作业}
+	\rhead{Dec.1th, 2024}
+	\section{设计思路}
+	\hspace{0em}堆排序的基本思路是将一个序列先排成一个大顶堆序列，此时第一个元素最大，将其取出排序，再对剩下的元素循环上述操作，为了节省空间，排序时可以将取出元素放在序列的末部。
+	
+	\hspace{0em}第一个重要函数percDown()，传递三个参数，序列a，索引i，大小n.作用是将索引i处的元素向下寻找合适的位置，去维护最大堆的性质。思路是先将元素a[i]移动到变量tmp中，再找左右节点较大者，与之比较，若前者大，则break；若后者大，则将a[i]改为后者，更新i为子节点，向下循环继续寻找合适位置，再把tmp放入到合适的位置。
+	
+	\hspace{0em}然后就可以写heapsort()了，传递序列a。首先靠percDown()构建一个大顶堆，percDown()是向下维护，如果对没有孙子的节点操作，我们可以保证该节点下的子树符合最大堆性质，因此我们从最后一个非叶子节点开始维护，向上遍历，就可以保证每遍历完一个节点，该节点的子树都符合最大堆性质。而最后一个非叶子节点的索引对于一个完全二叉树来说是容易得到的。之后我们进行排序，将第一个元素放到最后（相当于取出这个元素），我们再维护大顶堆的性质，此时的堆，除了第一个节点，其他节点的子树都满足最大堆性质，因此我们只需要把第一个元素向下沉，得到新的最大堆进行排序，值得注意的是，序列物理上虽然长度不变，但是每次实际上我们取走了一个元素，所以调用percDown()时，应当改变序列的长度。
+	
+	\section{测试流程}
+	\hspace{0em}check():用于检查传入的序列a是否为升序，是即true，否即false。
+	
+	\hspace{0em}run\_time():用于记录heapsort()排序所用的时间，记时方式是chrono。
+	
+	\hspace{0em}sort\_heap\_time():用于记录std::make\_heap()和std::sort\_heap()排序所用的时间，和上面的差不多。
+	
+	\hspace{0em}我把排序嵌入到了计时函数里面，而且保证了计时函数的参数传递方式是传值，这样就能保证两个函数是对同一个序列进行排序的计时，而不会发生第一个排序完成后，传入第二个的是排序好的序列。此外，我把check()也加入到了计时函数里面，如果排序没有完成，返回值将会是0us。事实上，如果没有std::make\_heap(),将会导致std::sort\_heap()无法对大顶堆操作，从而导致结果为0us,这也是测试时发现的问题。
+	
+	\hspace{0em}我用时间作为种子，生成四个长度为1000000的序列，分别符合random，ordered，reverse，repetitive。其中random是ordered生成方式后打乱，reverse是ordered生成方式后reverse。
+	
+	\hspace{0em}测试了几次，结果都差不多。
+	
+	\begin{table}[h!]
+		\begin{center}
+			\caption{TIME TABLE(单位:微秒)}
+			\begin{tabular}{|l|c|r|} 
+				\textbf{} & \textbf{my heapsort time} & \textbf{std::sort\_heap time}\\
+				\hline
+				random sequence& 104121 & 102301\\
+				ordered sequence& 46864 & 42290\\
+				reverse sequence& 53146 & 50751\\
+				repetitive sequence& 111150 & 104702\\
+			\end{tabular}
+		\end{center}
+	\end{table}
+	\section{结果分析}
+	\hspace{0em}可以看出，两种排序的时间都差不多，对于一般的长度为1000000的序列，花了差不多0.1秒，而对于顺序或逆序序列，只花了0.05秒左右。顺序和逆序序列本身具有堆的性质，因此在排序过程中会更快。初始化大顶堆的时间是O(N),而后续排序维护的时间是O(NlogN)(每取一次向下沉)，总的时间复杂度是O(NlogN)。
+	\hspace{0em}我另外写了一个程序，获得了不同大小的随机序列堆排序所需时间，做了一张折线图（在文件夹中），可以看出，时间的增长是大于线性的，应证了O(NlogN)的时间复杂度。
+	
+	
+
+	
+	
+\end{document}
