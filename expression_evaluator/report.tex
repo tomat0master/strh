@@ -1,0 +1,84 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry, CJKutf8}
+\geometry{margin=1.5cm, vmargin={0pt,1cm}}
+\setlength{\topmargin}{-1cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\textheight}{25.3cm}
+
+% useful packages.
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\usepackage{float, caption}
+
+\lstset{
+	basicstyle=\ttfamily, basewidth=0.5em
+}
+
+% some common command
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+
+\begin{document}
+	
+	\pagestyle{fancy}
+	\fancyhead{}
+	\lhead{何思壮, 3230103269}
+	\chead{数据结构与算法-四则混合运算器}
+	\rhead{Nov.23th, 2024}
+	
+\section{程序初步设计}
+\hspace{0em}计算中缀表达式通常采用栈的数据结构。面对中缀表达式字符串，我们由左向右读取字符，但是当我们读取字符时我们并不知道此时读取的字符是否要进行运算，例如"1+2"，我们读取到'2'时，才对先前的'1'和'+'进行处理。而由常识，我们读取字符并运算时，我们通常先对最近读取的几个字符进行运算，因此栈后进先出的特点就与我们的想法契合，因此标准库中的stack类是程序的主心骨。
+
+\hspace{0em}我们先完成一些常用的函数编写。
+
+1.isOperator(),判断字符是否为运算符
+
+2.isdigit(),判断字符是否为整数，标准库中有
+
+3.precedence(),刻画运算符的优先级,'+','-'为1,'*','/'为2
+
+4.applyOp(),计算二元运算，能识别除数为0
+
+\section{模拟程序运行}
+\hspace{0em}我们先假想一下，在我们读取字符串时，要分清三个主体，数字，运算符，括号。数字是运算的主体，我们的首要任务时将一个字符串转化为数字，标准库中的stof()函数识别转化小数，科学计数法，很好地满足我们的需求。我们创建两个栈，一个来存放数字，另一个存放括号和运算符。运算有三个扳机：栈顶运算符优先级大于等于遇到的运算符；遇到右括号；最后统一运算。标准库中的stack类并没有为pop()返回值，为方便入栈与出栈，我重载了stack类的pop()操作，出栈的同时返回值，就不用额外创建临时变量了。总之，按照上述编写程序，我已经得到了一个简易版本的运算器，能运算一些简单的情况。
+
+\section{识别非法表达式}
+\hspace{0em}我们不能保证所有的字符串都是正确的中缀表达式，要对此进行处理。首先如果栈空的情况下程序进行了出栈操作，我们需要报错，这代表表达式不是合法的表达式，括号不匹配便会引起这种结果。还有一些显而易见的错误，如运算符连续使用、表达式以运算符开头，这类错误或许最后也能通过栈空情况下出栈报错，但我希望制定规则，从原则上阻止这种错误。这类错误涉及到上一个字符的类型，所以我创造了变量flag用于记录上一个字符的类型：数字1，运算符2，左括号3，右括号4,负号5。这里制定了规则来区别减号与负号。读取字符时，获取字符类型，查看上一个字符的类型，这样就能判断运算符连用等本质错误了，此外我们可以假想运算式含在一个大括号中，因此flag初始化为3，代表以左括号开头。
+
+\hspace{0em}支持负数运算：遇到数字时，查看flag，如果为5，就乘-1；遇到左括号时，查看flag，如果为5，则遇到右括号时，数字入栈时乘-1。需要说明的是，遇到负号连用的情况，考虑到这不是一个正常的表达式，我将例如$3+----4$的表达式归为非法表达式，运算器将不会对这类表达式进行运算。对于$3+2e-4$的情况，也会正常识别负号，输出3.0002而不是1.
+
+\hspace{0em}关于括号，如$3+()4$的括号使用是非法的，因为制定的规则中，数字不能出现在右括号后面，而$(((3+4)))$是合法的，虽然很怪异，但我没有理由去说明这是一个非法的表达式。
+
+一些非法表达式示例：$3+---4;3+()4;3++4;3+(+4);3/0;((3+5)))$
+
+一些合法表达式示例；$3+-4;3+4;3+2e2;3+2e-4;(((3+4)))$
+
+
+
+
+\section{总结}
+\hspace{0em}综上，我的四则混合运算器能识别表达式合法与非法形式，考虑了负数输入以及科学计数法。
+测试程序中给出了一些例子，助教也可以自行测试。
+
+另外，如果表达式中出现了其他字符，我的运算器会略过，例如$3\ +\ 2,3a+2n$,都会返回5。
+
+
+
+
+\end{document}
